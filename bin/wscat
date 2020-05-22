@@ -144,7 +144,8 @@ program
     "specify a Client SSL Certificate Key's passphrase (--connect only). " +
       "If you don't provide a value, it will be prompted for"
   )
-  .option('--no-color', 'run without color')
+  .option('--no-color', 'Run without color')
+  .option('--pretty', 'Attempt to pretty print responses using JSON.stringify.')
   .option(
     '--slash',
     'enable slash commands for control frames (/ping, /pong, /close ' +
@@ -336,8 +337,16 @@ if (program.listen) {
     });
 
     ws.on('message', (data) => {
-      wsConsole.print(Console.Types.Incoming, data, Console.Colors.Blue);
-    });
+      let s = data;
+      if (program.pretty) {
+        try {
+          s = JSON.stringify(JSON.parse(data), null, 4);
+        } catch(e) {
+          s = data;
+        }
+      }
+      wsConsole.print(Console.Types.Incoming, s, Console.Colors.Blue);
+    };
 
     ws.on('ping', () => {
       if (program.showPingPong) {
